@@ -1,0 +1,1091 @@
+openapi: 3.0.3
+info:
+  title: Uniflow API
+  version: 1.0.0
+  description: >
+    Specification OpenAPI des endpoints actuellement implementes dans le backend Uniflow.
+
+servers:
+  - url: http://localhost:8080
+    description: Serveur local Spring Boot
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Events
+  - name: Inscriptions
+  - name: Organizers
+  - name: Poles
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Verifier que l'API repond
+      operationId: getHealth
+      responses:
+        '200':
+          description: API disponible
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Inscrire un utilisateur standard
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Utilisateur cree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Authentifier un compte
+      operationId: loginAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Authentification reussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/users/all:
+    get:
+      tags: [Users]
+      summary: Lister les utilisateurs pour l'administration
+      operationId: getAllUsers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des utilisateurs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminUserDTO'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/users/{id}:
+    get:
+      tags: [Users]
+      summary: Recuperer un utilisateur par identifiant
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Utilisateur trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Users]
+      summary: Supprimer un utilisateur
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Utilisateur supprime
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/users/{id}/organization:
+    put:
+      tags: [Users]
+      summary: Modifier l'organisation rattachee a un utilisateur
+      operationId: updateUserOrganization
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserOrganizationUpdateRequest'
+      responses:
+        '200':
+          description: Organisation utilisateur modifiee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserDTO'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/events/all:
+    get:
+      tags: [Events]
+      summary: Lister tous les evenements
+      operationId: getAllEvents
+      responses:
+        '200':
+          description: Liste des evenements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+
+  /api/events:
+    get:
+      tags: [Events]
+      summary: Lister les evenements par pole
+      operationId: getEventsByPole
+      parameters:
+        - in: query
+          name: pole
+          required: true
+          schema:
+            type: string
+          example: Informatique
+      responses:
+        '200':
+          description: Liste des evenements du pole demande
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+
+  /api/events/create:
+    post:
+      tags: [Events]
+      summary: Creer un evenement
+      operationId: createEvent
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: Evenement cree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/events/{id}:
+    get:
+      tags: [Events]
+      summary: Recuperer un evenement par identifiant
+      operationId: getEventById
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Evenement trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDTO'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Events]
+      summary: Modifier un evenement
+      operationId: updateEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '200':
+          description: Evenement modifie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDTO'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Events]
+      summary: Supprimer un evenement
+      operationId: deleteEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Evenement supprime
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/events/orga/{organisationId}:
+    get:
+      tags: [Events]
+      summary: Lister les evenements d'une organisation
+      operationId: getEventsByOrganisation
+      parameters:
+        - in: path
+          name: organisationId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Liste des evenements de l'organisation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+
+  /api/events/favori/{userId}:
+    get:
+      tags: [Events]
+      summary: Lister les evenements favoris d'un utilisateur
+      operationId: getFavoriteEvents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Liste des favoris
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/events/favori/{userId}/{eventId}:
+    post:
+      tags: [Events]
+      summary: Ajouter un evenement aux favoris
+      operationId: addFavoriteEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Favori ajoute
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Events]
+      summary: Retirer un evenement des favoris
+      operationId: removeFavoriteEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Favori supprime
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/inscriptions/{userId}:
+    get:
+      tags: [Inscriptions]
+      summary: Lister les evenements auxquels un utilisateur est inscrit
+      operationId: getUserInscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Liste des inscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/inscriptions/event/{eventId}:
+    get:
+      tags: [Inscriptions]
+      summary: Lister les participants d'un evenement
+      operationId: getEventParticipants
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Liste des participants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParticipantDTO'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/inscriptions/{userId}/{eventId}:
+    post:
+      tags: [Inscriptions]
+      summary: Inscrire un utilisateur a un evenement
+      operationId: addInscription
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '201':
+          description: Inscription ajoutee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags: [Inscriptions]
+      summary: Supprimer une inscription
+      operationId: removeInscription
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Inscription supprimee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/organizers/all:
+    get:
+      tags: [Organizers]
+      summary: Lister toutes les organisations
+      operationId: getAllOrganizers
+      responses:
+        '200':
+          description: Liste des organisations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganisationDTO'
+
+  /api/organizers/create:
+    post:
+      tags: [Organizers]
+      summary: Creer une organisation
+      operationId: createOrganizer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganisationDTO'
+      responses:
+        '201':
+          description: Organisation creee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/organizers/{id}:
+    get:
+      tags: [Organizers]
+      summary: Recuperer une organisation par identifiant
+      operationId: getOrganizerById
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Organisation trouvee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDTO'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Organizers]
+      summary: Modifier une organisation
+      operationId: updateOrganizer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganisationDTO'
+      responses:
+        '200':
+          description: Organisation modifiee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganisationDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags: [Organizers]
+      summary: Supprimer une organisation
+      operationId: deleteOrganizer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Organisation supprimee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/poles/all:
+    get:
+      tags: [Poles]
+      summary: Lister tous les poles
+      operationId: getAllPoles
+      responses:
+        '200':
+          description: Liste des poles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PoleDTO'
+
+  /api/poles/create:
+    post:
+      tags: [Poles]
+      summary: Creer un pole
+      operationId: createPole
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PoleDTO'
+      responses:
+        '201':
+          description: Pole cree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PoleDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/poles/{id}:
+    get:
+      tags: [Poles]
+      summary: Recuperer un pole par identifiant
+      operationId: getPoleById
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Pole trouve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PoleDTO'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Poles]
+      summary: Modifier un pole
+      operationId: updatePole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PoleDTO'
+      responses:
+        '200':
+          description: Pole modifie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PoleDTO'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Poles]
+      summary: Supprimer un pole
+      operationId: deletePole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Pole supprime
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+        format: int64
+    UserId:
+      in: path
+      name: userId
+      required: true
+      schema:
+        type: integer
+        format: int64
+    EventId:
+      in: path
+      name: eventId
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+  responses:
+    BadRequest:
+      description: Donnees invalides
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentification requise ou invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Acces interdit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflit avec une ressource existante
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    AuthRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: alice@univ-lyon1.fr
+        password:
+          type: string
+          example: secret123
+
+    RegisterRequest:
+      type: object
+      required: [nom, prenom, email, password]
+      properties:
+        nom:
+          type: string
+          example: Dupont
+        prenom:
+          type: string
+          example: Alice
+        email:
+          type: string
+          format: email
+          example: alice@univ-lyon1.fr
+        password:
+          type: string
+          example: secret123
+
+    AuthResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [ADMIN, ORGANISATEUR, UTILISATEUR]
+          example: [UTILISATEUR, ORGANISATEUR]
+        displayName:
+          type: string
+          example: Alice Dupont
+        email:
+          type: string
+          format: email
+          example: alice@univ-lyon1.fr
+        message:
+          type: string
+          example: Connexion reussie.
+        token:
+          type: string
+          description: JWT a envoyer dans le header Authorization Bearer.
+        organisations:
+          type: array
+          items:
+            type: string
+          example: [Club Informatique]
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nom:
+          type: string
+          example: Dupont
+        prenom:
+          type: string
+          example: Alice
+        email:
+          type: string
+          format: email
+          example: alice@univ-lyon1.fr
+        dateInscription:
+          type: string
+          format: date-time
+          example: 2026-03-25T14:00:00
+
+    AdminUserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Alice Dupont
+        email:
+          type: string
+          format: email
+          example: alice@univ-lyon1.fr
+        roles:
+          type: array
+          items:
+            type: string
+          example: [Utilisateur, Organisateur]
+        organization:
+          type: string
+          example: Club Informatique
+        organizations:
+          type: array
+          items:
+            type: string
+          example: [Club Informatique, BDE]
+        registrationDate:
+          type: string
+          format: date
+          example: 2026-03-25
+
+    UserOrganizationUpdateRequest:
+      type: object
+      properties:
+        organization:
+          type: string
+          description: Ancien format compatible. Nom de l'organisation cible. Vide pour retirer le role organisateur.
+          example: Club Informatique
+        organizations:
+          type: array
+          description: Nouveau format. Liste des organisations cibles. Liste vide pour retirer toutes les organisations.
+          items:
+            type: string
+          example: [Club Informatique, BDE]
+
+    Event:
+      type: object
+      required: [title, organisation]
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 1
+        title:
+          type: string
+          example: Conference Intelligence Artificielle
+        description:
+          type: string
+          example: Decouvrez les dernieres avancees en intelligence artificielle.
+        address:
+          type: string
+          example: Amphitheatre A - Campus Lyon 1
+        beginDate:
+          type: string
+          format: date-time
+          example: 2026-04-15T09:00:00
+        endDate:
+          type: string
+          format: date-time
+          example: 2026-04-15T17:00:00
+        capacity:
+          type: integer
+          nullable: true
+          example: 150
+        status:
+          type: string
+          enum: [PUBLISHED, CLOSED, CANCELED]
+          example: PUBLISHED
+        price:
+          type: number
+          format: double
+          example: 25.0
+        organisation:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+        pole:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+
+    EventDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        title:
+          type: string
+          example: Conference Intelligence Artificielle
+        description:
+          type: string
+          example: Decouvrez les dernieres avancees en intelligence artificielle.
+        address:
+          type: string
+          example: Amphitheatre Themis - Campus Lyon 1
+        beginDate:
+          type: string
+          format: date-time
+          example: 2026-04-15T09:00:00
+        endDate:
+          type: string
+          format: date-time
+          example: 2026-04-15T17:00:00
+        capacity:
+          type: integer
+          nullable: true
+          example: 150
+        status:
+          type: string
+          enum: [PUBLISHED, CLOSED, CANCELED]
+          example: PUBLISHED
+        price:
+          type: number
+          format: double
+          example: 25.0
+        organisationId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 1
+        organisationName:
+          type: string
+          nullable: true
+          example: Club Informatique
+        poleId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 1
+        poleName:
+          type: string
+          nullable: true
+          example: Informatique
+
+    OrganisationDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          example: Club Informatique
+        nomStructure:
+          type: string
+          example: Club Informatique
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: club.info@univ-lyon1.fr
+        pole:
+          type: string
+          nullable: true
+          example: Informatique
+        poleId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 1
+        status:
+          type: string
+          example: Actif
+
+    ParticipantDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nom:
+          type: string
+          example: Dupont
+        prenom:
+          type: string
+          example: Alice
+        email:
+          type: string
+          format: email
+          example: alice@univ-lyon1.fr
+        eventId:
+          type: integer
+          format: int64
+          example: 12
+
+    PoleDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          example: Informatique
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operation effectuee avec succes
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Identifiants invalides.
