@@ -63,10 +63,10 @@ UniFlow vise trois types d’utilisateurs :
 
 | Nom | Prénom | Email | Numéro étudiant | Rôle |
 |---|---|---|---|---|
+| KONKOBO | ULRICH-ARTHUR | ulrich-arthur.konkobo@etu.univ-lyon1.fr | p2513439 | Back-end + BD + Intégration|
 | BADRIOUEN | AYOUB | ayoub.badriouen@etu.univ-lyon1.fr | p2506183 | Intégration + Front |
 | CHINOUN | RIADH | riadh.chinoun@etu.univ-lyon1.fr | p2203462 | Organisation + Intégration |
 | HAMIDOUNI | EL-KAIM | el-kaim.hamidouni@etu.univ-lyon1.fr | p2100030 | Back-end |
-| KONKOBO | ULRICH-ARTHUR | ulrich-arthur.konkobo@etu.univ-lyon1.fr | p2513439 | Back-end + BD |
 | MEKHDOUL | MERIEM | meriem.mekhdoul@etu.univ-lyon1.fr | p2310195 | BD + Front + Produit |
 | YENNEK | ALDJIA | aldjia.yennek@etu.univ-lyon1.fr | p2510289 | BD + Front + Produit |
 
@@ -248,9 +248,9 @@ Pour une future version, nous pourrions ajouter :
 
 Projet réalisé par :
 
+- Ulrich-Arthur KONKOBO
 - Ayoub BADRIOUEN
 - Riadh CHINOUN
-- El-Kaim HAMIDOUNI
-- Ulrich-Arthur KONKOBO
+- El-Kaim HAMIDOUNIO
 - Meriem MEKHDOUL
 - Aldjia YENNEK
